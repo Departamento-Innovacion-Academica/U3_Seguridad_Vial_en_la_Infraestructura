@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glosario Interactivo - Seguridad Vial y Consistencia Geométrica</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        /* --- VARIABLES DE COLOR --- */
+        :root {
+            --primary-brand: #27728F;
+            --primary-hover: #1f5b73;
+            --bg-light: #ececec;
+            --text-dark: #333333;
+            --white: #ffffff;
+            --disabled-gray: #a0a0a0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: radial-gradient(#d0d0d0 1px, transparent 1px);
+            background-size: 10px 10px;
+            background-color: #f4f4f4;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* --- PANTALLA INICIAL (PORTADA) --- */
+        .welcome-screen {
+            background: var(--white);
+            width: 100%;
+            max-width: 650px;
+            padding: 50px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(39, 114, 143, 0.12);
+            text-align: center;
+            position: absolute;
+            transition: all 0.4s ease-in-out;
+            border-top: 6px solid var(--primary-brand);
+            z-index: 10;
+        }
+
+        .welcome-badge {
+            background-color: rgba(39, 114, 143, 0.08);
+            color: var(--primary-brand);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 6px 16px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .welcome-screen h1 {
+            color: var(--text-dark);
+            font-size: 2.3rem;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+            line-height: 1.2;
+        }
+
+        .welcome-screen h1 span {
+            color: var(--primary-brand);
+            display: block;
+        }
+
+        .welcome-screen p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0 auto 35px auto;
+            max-width: 480px;
+        }
+
+        .start-btn {
+            background-color: var(--primary-brand);
+            color: var(--white);
+            border: none;
+            padding: 15px 45px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(39, 114, 143, 0.3);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            outline: none;
+        }
+
+        .start-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(39, 114, 143, 0.4);
+        }
+
+        .welcome-screen.hidden-screen {
+            opacity: 0;
+            transform: scale(0.95);
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        /* --- CONTENEDOR DEL GLOSARIO --- */
+        .glossary-widget {
+            width: 100%;
+            max-width: 900px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+            position: absolute;
+        }
+
+        .glossary-widget.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            position: relative;
+        }
+
+        .instruction-wrapper {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+
+        .instruction-badge {
+            background-color: var(--primary-brand);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse-attention 2s infinite;
+        }
+
+        @keyframes pulse-attention {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(39, 114, 143, 0.4); }
+            70% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(39, 114, 143, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(39, 114, 143, 0); }
+        }
+
+        .glossary-header {
+            background-color: var(--primary-brand);
+            color: var(--white);
+            padding: 20px;
+            text-align: center;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .glossary-header h2 {
+            margin: 0;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .glossary-body {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start; 
+        }
+
+        .tabs-container {
+            display: flex;
+            flex-direction: column;
+            width: 140px;
+            flex-shrink: 0;
+            background-color: var(--primary-brand);
+            border-radius: 15px;
+            padding: 10px 0;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px; 
+        }
+
+        .tab-btn {
+            background: transparent;
+            color: var(--white);
+            border: none;
+            padding: 15px 10px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            outline: none;
+        }
+
+        .tab-btn:hover {
+            background-color: rgba(255,255,255,0.1);
+        }
+
+        .tab-btn.active {
+            background-color: var(--bg-light);
+            color: var(--primary-brand);
+            border-radius: 5px 0 0 5px;
+        }
+
+        .content-area {
+            flex-grow: 1;
+            background-color: var(--bg-light);
+            border-radius: 15px;
+            padding: 40px;
+            min-height: 450px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .definition-item {
+            margin-bottom: 30px;
+            padding-left: 20px;
+            border-left: 5px solid var(--primary-brand);
+        }
+
+        .definition-item h3 {
+            color: var(--primary-brand);
+            margin: 0 0 10px 0;
+            font-size: 1.2rem;
+            font-weight: 700;
+        }
+
+        .definition-item p {
+            color: var(--text-dark);
+            line-height: 1.6;
+            margin: 0;
+            text-align: left;
+        }
+
+        .hidden { display: none !important; }
+
+        @keyframes slideUpFade {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        .content-group.animate-in .definition-item {
+            animation: slideUpFade 0.5s ease-out forwards;
+            opacity: 0; 
+        }
+
+        .content-group.animate-in .definition-item:nth-child(1) { animation-delay: 0.1s; }
+        .content-group.animate-in .definition-item:nth-child(2) { animation-delay: 0.2s; }
+        .content-group.animate-in .definition-item:nth-child(3) { animation-delay: 0.3s; }
+        .content-group.animate-in .definition-item:nth-child(4) { animation-delay: 0.4s; }
+        .content-group.animate-in .definition-item:nth-child(5) { animation-delay: 0.5s; }
+        .content-group.animate-in .definition-item:nth-child(6) { animation-delay: 0.6s; }
+        .content-group.animate-in .definition-item:nth-child(7) { animation-delay: 0.7s; }
+
+        @media (max-width: 768px) {
+            body { align-items: flex-start; padding: 20px 10px; }
+            .glossary-body { flex-direction: column; }
+            .tabs-container { width: 100%; flex-direction: row; position: static; }
+            .tab-btn { flex: 1; border-bottom: none; border-right: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; }
+            .tab-btn.active { border-radius: 10px 10px 0 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA INICIAL (PORTADA) -->
+    <div class="welcome-screen" id="welcomeScreen">
+        <div class="welcome-badge">Recurso Interactivo</div>
+        <h1>Glosario de la Unidad <span>Seguridad Vial y Consistencia Geométrica</span></h1>
+        <p>Explora los conceptos clave sobre auditorías de seguridad vial, carreteras autoexplicativas, enfoque sistema seguro y dinámica de velocidades de forma interactiva.</p>
+        <button class="start-btn" onclick="startGlossary()">
+            Iniciar Recurso <span>➔</span>
+        </button>
+    </div>
+
+    <!-- CONTENEDOR PRINCIPAL DEL GLOSARIO -->
+    <div class="glossary-widget" id="glossaryWidget">
+        <div class="instruction-wrapper">
+            <div class="instruction-badge">
+                <span>👆</span> Haga Clic sobre los botones para ampliar la información
+            </div>
+        </div>
+
+        <div class="glossary-header">
+            <h2>Glosario de la unidad</h2>
+        </div>
+
+        <div class="glossary-body">
+            <div class="tabs-container">
+                <button class="tab-btn active" onclick="filterContent('A-D', this)">A – D</button>
+                <button class="tab-btn" onclick="filterContent('M-P', this)">M – P</button>
+                <button class="tab-btn" onclick="filterContent('S-V', this)">S – V</button>
+            </div>
+
+            <div class="content-area">
+                <!-- Grupo A – D -->
+                <div class="content-group animate-in" id="group-A-D">
+                    <div class="definition-item">
+                        <h3>Auditoría de Seguridad Vial (ASV)</h3>
+                        <p>Procedimiento formal y sistemático en el que un equipo independiente y calificado comprueba las condiciones de seguridad de un proyecto vial nuevo o existente para identificar riesgos potenciales de siniestralidad (PIARC, 2015).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Carreteras autoexplicativas (Self-Explaining Roads)</h3>
+                        <p>Concepto de diseño donde la configuración geométrica y el entorno de la vía inducen de manera natural e intuitiva la velocidad adecuada y el comportamiento esperado del conductor, reduciendo la dependencia de la señalización vertical (Theeuwes & Godthelp, 1995).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Condición de flujo libre</h3>
+                        <p>Estado del tránsito en el cual la densidad vehicular es baja y la interacción entre vehículos es mínima, permitiendo que los conductores seleccionen su velocidad basándose únicamente en las características geométricas de la vía y el entorno. Se cuantifica generalmente mediante un intervalo (headway) superior a 5 segundos (onlinepubs, 2011).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Consistencia del trazado</h3>
+                        <p>Grado en que la geometría de la carretera se ajusta a las expectativas del conductor. Un diseño consistente minimiza las sorpresas críticas y mantiene variaciones de velocidad de operación inferiores a 10 km/h entre elementos sucesivos (Sánchez, 2011).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Diferencial de Velocidad (Δv)</h3>
+                        <p>Diferencia aritmética entre las velocidades de operación calculadas para dos elementos geométricos sucesivos (ej. tangente-curva o curva-curva). Según los criterios de consistencia, un Δv superior a 10 km/h se considera un riesgo de seguridad moderado, y superior a 20 km/h un riesgo crítico (Lamm, Psarianos, & Mailaender, 1999).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Diseño universal</h3>
+                        <p>Enfoque de ingeniería y arquitectura que busca crear entornos viales accesibles y seguros para todas las personas, independientemente de su edad, capacidad física o cognitiva, eliminando barreras en la infraestructura (Steinfeld & Maisel, 2012).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Distancia de Visibilidad de Parada (DVP)</h3>
+                        <p>Distancia mínima necesaria para que un conductor, transitando a la velocidad de diseño, perciba un obstáculo en su trayectoria y logre detener el vehículo antes de impactarlo (AASHTO, 2018).</p>
+                    </div>
+                </div>
+
+                <!-- Grupo M – P -->
+                <div class="content-group hidden" id="group-M-P">
+                    <div class="definition-item">
+                        <h3>Mejoramiento vial</h3>
+                        <p>Intervención técnica que modifica los estándares geométricos u operacionales de una vía existente para adaptarla a nuevas demandas de tráfico o corregir deficiencias de seguridad, a diferencia de la rehabilitación, que busca recuperar el estado original (INVIAS, 2008).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Pacificación del Tránsito (Traffic Calming)</h3>
+                        <p>Conjunto de estrategias físicas y de diseño (como resaltos, chicanas o estrechamientos) aplicadas principalmente en entornos urbanos para forzar la reducción de la velocidad de operación y mejorar la seguridad de los usuarios vulnerables (NACTO, 2016).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Perfil de velocidad</h3>
+                        <p>Diagrama que representa la variación de la velocidad de operación (V85) de forma continua a lo largo del abscisado de una carretera. Es la herramienta principal para detectar inconsistencias geométricas y puntos de alta demanda de frenado (Sánchez, 2011).</p>
+                    </div>
+                </div>
+
+                <!-- Grupo S – V -->
+                <div class="content-group hidden" id="group-S-V">
+                    <div class="definition-item">
+                        <h3>Sistema Seguro (Safe System)</h3>
+                        <p>Paradigma de gestión de la seguridad vial que acepta la falibilidad humana y diseña la infraestructura para que las fuerzas de colisión no excedan los límites de tolerancia del cuerpo humano. Se basa en la responsabilidad compartida y la creación de un entorno que perdone el error (OECD, 2016).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Tangente independiente</h3>
+                        <p>Tramo recto con longitud suficiente para que el conductor alcance su velocidad deseada o de crucero. En esta condición, la velocidad de entrada a la siguiente curva no depende de la geometría del elemento anterior, lo que debe considerarse al aplicar modelos de predicción de velocidad (onlinepubs, 2011).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Tasa de desaceleración</h3>
+                        <p>Ritmo de reducción de la velocidad expresado en m/s² que emplean los conductores al aproximarse a una curva. Este parámetro es variable y crítico en los modelos de predicción de velocidad para determinar si la transición entre elementos es segura (onlinepubs, 2011).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Usuario vulnerable</h3>
+                        <p>Actores viales que presentan una mayor exposición a lesiones graves o fatales debido a la falta de una estructura protectora externa y a la disparidad de masa/velocidad frente a vehículos motorizados. Incluye peatones, ciclistas y motociclistas (ANSV, 2022).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Velocidad de Marcha (Running Speed)</h3>
+                        <p>Velocidad media de un vehículo en un tramo determinado, obtenida al dividir la distancia recorrida por el tiempo en el que el vehículo estuvo efectivamente en movimiento, excluyendo las demoras por detenciones (AASHTO, 2018).</p>
+                    </div>
+                    <div class="definition-item">
+                        <h3>Velocidad Objetivo (Target Speed)</h3>
+                        <p>Velocidad máxima a la que se pretende que circulen los usuarios en un entorno urbano. A diferencia de la velocidad de diseño tradicional, la velocidad objetivo coordina el diseño geométrico y la pacificación del tráfico para forzar un comportamiento seguro (NACTO, 2016).</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    function startGlossary() {
+        const welcome = document.getElementById('welcomeScreen');
+        const glossary = document.getElementById('glossaryWidget');
+        
+        welcome.classList.add('hidden-screen');
+        glossary.classList.add('show');
+    }
+
+    function filterContent(groupId, btnElement) {
+        const groups = document.querySelectorAll('.content-group');
+        groups.forEach(group => {
+            group.classList.add('hidden');
+            group.classList.remove('animate-in');
+        });
+
+        const selectedGroup = document.getElementById('group-' + groupId);
+        if (selectedGroup) {
+            selectedGroup.classList.remove('hidden');
+            void selectedGroup.offsetWidth; 
+            selectedGroup.classList.add('animate-in');
+        }
+
+        const buttons = document.querySelectorAll('.tab-btn');
+        buttons.forEach(btn => btn.classList.remove('active'));
+        btnElement.classList.add('active');
+    }
+</script>
+
+</body>
+</html>

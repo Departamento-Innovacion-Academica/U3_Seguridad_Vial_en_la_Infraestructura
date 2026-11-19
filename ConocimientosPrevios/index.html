@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tarjetas Interactivas</title>
+  
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #0d212b 0%, #081218 60%, #04080c 100%);
+      --card-bg: rgba(15, 33, 43, 0.75);
+      --card-border: rgba(39, 114, 143, 0.35);
+      --card-border-hover: #52a3c7;
+      --accent-color: #27728F;
+      --accent-glow: rgba(39, 114, 143, 0.4);
+      --text-main: #f3f4f6;
+      --text-muted: #94a3b8;
+      --modal-overlay: rgba(4, 10, 15, 0.88);
+      --modal-bg: #0f222d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      overflow-x: hidden;
+    }
+
+    /* Instrucción Flotante */
+    .floating-instruction {
+      background: rgba(39, 114, 143, 0.15);
+      border: 1px solid rgba(39, 114, 143, 0.45);
+      color: #b7e3f8;
+      padding: 0.85rem 1.8rem;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 3rem;
+      box-shadow: 0 0 25px rgba(39, 114, 143, 0.2), inset 0 0 10px rgba(39, 114, 143, 0.1);
+      backdrop-filter: blur(12px);
+      animation: float 3.5s ease-in-out infinite, fadeInDown 0.8s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: 0.3px;
+    }
+
+    .floating-instruction svg {
+      width: 20px;
+      height: 20px;
+      fill: #52a3c7;
+      filter: drop-shadow(0 0 5px #27728F);
+    }
+
+    /* Contenedor de Filas (4 arriba, 3 abajo centrados) */
+    .cards-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.8rem;
+      max-width: 960px;
+      width: 100%;
+    }
+
+    .cards-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.8rem;
+      width: 100%;
+    }
+
+    /* Tarjeta Minimalista Numérica */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2.5rem 1.5rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 210px;
+      height: 170px;
+      opacity: 0;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .cards-row:first-child .card:nth-child(1) { animation-delay: 0.05s; }
+    .cards-row:first-child .card:nth-child(2) { animation-delay: 0.12s; }
+    .cards-row:first-child .card:nth-child(3) { animation-delay: 0.19s; }
+    .cards-row:first-child .card:nth-child(4) { animation-delay: 0.26s; }
+    .cards-row:last-child .card:nth-child(1)  { animation-delay: 0.33s; }
+    .cards-row:last-child .card:nth-child(2)  { animation-delay: 0.40s; }
+    .cards-row:last-child .card:nth-child(3)  { animation-delay: 0.47s; }
+
+    /* Barra brillante superior */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, #1d5267, #27728F, #52a3c7);
+      opacity: 0.6;
+      transition: opacity 0.4s ease;
+    }
+
+    /* Resplandor ambiental */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(39, 114, 143, 0.15) 0%, transparent 70%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-10px) scale(1.04);
+      border-color: var(--card-border-hover);
+      box-shadow: 0 20px 45px -10px var(--accent-glow), 0 0 30px rgba(39, 114, 143, 0.3);
+    }
+
+    .card:hover::before,
+    .card:hover::after {
+      opacity: 1;
+    }
+
+    /* Número de la tarjeta */
+    .card-number {
+      width: 72px;
+      height: 72px;
+      border-radius: 18px;
+      background: rgba(39, 114, 143, 0.22);
+      border: 1px solid rgba(82, 163, 199, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: #ffffff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .card:hover .card-number {
+      background: var(--accent-color);
+      border-color: #b7e3f8;
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(82, 163, 199, 0.5);
+    }
+
+    /* MODAL EMERGENTE */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--modal-bg);
+      border: 1px solid rgba(82, 163, 199, 0.4);
+      border-radius: 24px;
+      max-width: 660px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 2.8rem;
+      position: relative;
+      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9), 0 0 50px rgba(39, 114, 143, 0.25);
+      transform: scale(0.88) translateY(30px);
+      transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.4rem;
+      right: 1.4rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.3rem;
+      transition: all 0.25s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(39, 114, 143, 0.4);
+      color: #ffffff;
+      border-color: #52a3c7;
+      transform: rotate(90deg);
+    }
+
+    .modal-body {
+      display: flex;
+      align-items: flex-start;
+      gap: 1.25rem;
+      padding-top: 0.5rem;
+    }
+
+    .modal-number-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: var(--accent-color);
+      border: 1px solid #52a3c7;
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      margin-top: 0.2rem;
+    }
+
+    .modal-body p {
+      color: #e2e8f0;
+      font-size: 1.02rem;
+      line-height: 1.75;
+    }
+
+    /* Animaciones */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(35px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scrollbar */
+    .modal-content::-webkit-scrollbar { width: 7px; }
+    .modal-content::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    .modal-content::-webkit-scrollbar-thumb { background: #1d5267; border-radius: 10px; }
+    .modal-content::-webkit-scrollbar-thumb:hover { background: #27728F; }
+  </style>
+</head>
+<body>
+
+  <!-- Instrucción Flotante -->
+  <div class="floating-instruction">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+    </svg>
+    Haga clic sobre cada tarjeta para ampliar la información.
+  </div>
+
+  <!-- Contenedor de Tarjetas: 4 arriba y 3 abajo centrados -->
+  <div class="cards-wrapper">
+    
+    <!-- Fila Superior: 4 tarjetas -->
+    <div class="cards-row">
+      <div class="card" onclick="openModal('modal-1')">
+        <span class="card-number">1</span>
+      </div>
+
+      <div class="card" onclick="openModal('modal-2')">
+        <span class="card-number">2</span>
+      </div>
+
+      <div class="card" onclick="openModal('modal-3')">
+        <span class="card-number">3</span>
+      </div>
+
+      <div class="card" onclick="openModal('modal-4')">
+        <span class="card-number">4</span>
+      </div>
+    </div>
+
+    <!-- Fila Inferior: 3 tarjetas centradas -->
+    <div class="cards-row">
+      <div class="card" onclick="openModal('modal-5')">
+        <span class="card-number">5</span>
+      </div>
+
+      <div class="card" onclick="openModal('modal-6')">
+        <span class="card-number">6</span>
+      </div>
+
+      <div class="card" onclick="openModal('modal-7')">
+        <span class="card-number">7</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODALES EMERGENTES -->
+
+  <!-- Modal 1 -->
+  <div class="modal-overlay" id="modal-1" onclick="closeModalOnOutsideClick(event, 'modal-1')">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('modal-1')">&times;</button>
+      <div class="modal-body">
+        <span class="modal-number-badge">1</span>
+        <p>Diagnosticar el estado operativo de infraestructuras viales existentes para proponer soluciones de rehabilitación y mejoramiento que armonicen los estándares geométricos con las restricciones del entorno rural y urbano, priorizando la seguridad vial sobre la capacidad vehicular.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2 -->
+  <div class="modal-overlay" id="modal-2" onclick="closeModalOnOutsideClick(event, 'modal-2')">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('modal-2')">&times;</button>
+      <div class="modal-body">
+        <span class="modal-number-badge">2</span>
+        <p>Estimar la velocidad de operación (V85) mediante la aplicación de modelos matemáticos de predicción, permitiendo anticipar el comportamiento real de los conductores y evaluar la idoneidad de la señalización y los límites de velocidad reglamentarios.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3 -->
+  <div class="modal-overlay" id="modal-3" onclick="closeModalOnOutsideClick(event, 'modal-3')">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('modal-3')">&times;</button>
+      <div class="modal-body">
+        <span class="modal-number-badge">3</span>
+        <p>Modelar las tasas de aceleración y desaceleración en segmentos de transición geométrica para determinar la fluidez del tráfico y garantizar que las maniobras de frenado o aceleración se realicen dentro de márgenes de seguridad aceptables.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4 -->
+  <div class="modal-overlay" id="modal-4" onclick="closeModalOnOutsideClick(event, 'modal-4')">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('modal-4')">&times;</button>
+      <div class="modal-body">
+        <span class="modal-number-badge">4</span>
+        <p>Diseñar proyectos de infraestructura bajo el enfoque de Calles Completas, garantizando una distribución equitativa del espacio vial que integre de forma segura a todos los usuarios (peatones, ciclistas, transporte público y vehículos motorizados) según la pirámide de la movilidad.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5 -->
+  <div class="modal-overlay" id="modal-5" onclick="closeModalOnOutsideClick(event, 'modal-5')">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('modal-5')">&times;</button>
+      <div class="modal-body">
+        <span class="modal-number-badge">5</span>
+        <p>Formular intervenciones de Urbanismo Táctico, entendidas como estrategias de bajo costo y rápida ejecución, para recuperar el espacio público, proteger a los usuarios vulnerables y ensayar medidas de pacificación del tránsito antes de consolidarlas de forma permanente.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6 -->
+  <div class="modal-overlay" id="modal-6" onclick="closeModalOnOutsideClick(event, 'modal-6')">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('modal-6')">&times;</button>
+      <div class="modal-body">
+        <span class="modal-number-badge">6</span>
+        <p>Valorar de manera crítica las limitaciones de los modelos de estimación de velocidad hoy disponibles y aplicar el criterio del ingeniero para ajustar sus resultados a la topografía, el clima y el parque automotor propios de cada corredor.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 7 -->
+  <div class="modal-overlay" id="modal-7" onclick="closeModalOnOutsideClick(event, 'modal-7')">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal('modal-7')">&times;</button>
+      <div class="modal-body">
+        <span class="modal-number-badge">7</span>
+        <p>Aplicar en el diseño de infraestructura los principios del Enfoque de Sistema Seguro y de la Ley 2251 de 2022, articulando medidas de pacificación del tránsito con los conceptos de vías "autoexplicativas" y "perdonadoras" para brindar protección efectiva a los usuarios vulnerables.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+      }
+    }
+
+    function closeModal(modalId) {
+      const modal = document.getElementById(modalId);
+      if (modal) {
+        modal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+      }
+    }
+
+    function closeModalOnOutsideClick(event, modalId) {
+      if (event.target.id === modalId) {
+        closeModal(modalId);
+      }
+    }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const activeModal = document.querySelector('.modal-overlay.active');
+        if (activeModal) {
+          closeModal(activeModal.id);
+        }
+      }
+    });
+  </script>
+</body>
+</html>

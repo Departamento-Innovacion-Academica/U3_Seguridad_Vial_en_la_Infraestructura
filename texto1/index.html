@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrusel Horizontal en Estilo 3D Circular - Calles Completas</title>
+  
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: radial-gradient(circle at 50% 0%, #0d212b 0%, #081218 60%, #04080c 100%);
+      --card-bg: rgba(15, 33, 43, 0.82);
+      --card-border: rgba(39, 114, 143, 0.45);
+      --card-border-hover: #52a3c7;
+      --accent-color: #27728F;
+      --accent-glow: rgba(39, 114, 143, 0.5);
+      --text-main: #f3f4f6;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1.5rem;
+      overflow-x: hidden;
+      perspective: 1400px;
+    }
+
+    /* Instrucción Flotante */
+    .floating-instruction {
+      background: rgba(39, 114, 143, 0.15);
+      border: 1px solid rgba(39, 114, 143, 0.45);
+      color: #b7e3f8;
+      padding: 0.85rem 1.8rem;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 2.5rem;
+      box-shadow: 0 0 25px rgba(39, 114, 143, 0.2), inset 0 0 10px rgba(39, 114, 143, 0.1);
+      backdrop-filter: blur(12px);
+      animation: float 3.5s ease-in-out infinite, fadeInDown 0.8s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      letter-spacing: 0.3px;
+      text-align: center;
+    }
+
+    .floating-instruction svg {
+      width: 20px;
+      height: 20px;
+      fill: #52a3c7;
+      filter: drop-shadow(0 0 5px #27728F);
+      flex-shrink: 0;
+    }
+
+    /* Contenedor Principal 3D */
+    .carousel-container {
+      max-width: 850px;
+      width: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transform-style: preserve-3d;
+      animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    /* Tarjeta del Carrusel con Estilo 3D Profundo */
+    .carousel-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 26px;
+      padding: 3rem 2.5rem;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(20px);
+      box-shadow: 
+        0 30px 60px -15px rgba(0, 0, 0, 0.85),
+        0 0 45px rgba(39, 114, 143, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.15);
+      width: 100%;
+      min-height: 360px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      transform-style: preserve-3d;
+      transform: rotateX(6deg) rotateY(0deg) translateZ(0);
+    }
+
+    .carousel-card:hover {
+      border-color: var(--card-border-hover);
+      box-shadow: 
+        0 40px 70px -15px var(--accent-glow),
+        0 0 60px rgba(39, 114, 143, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transform: rotateX(0deg) rotateY(0deg) translateY(-10px) scale(1.01);
+    }
+
+    /* Barra superior brillante */
+    .carousel-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 5px;
+      background: linear-gradient(90deg, #1d5267, #27728F, #52a3c7, #b7e3f8);
+      box-shadow: 0 0 20px #52a3c7;
+    }
+
+    /* Slides con Animación 3D Rotacional Circular */
+    .carousel-slide {
+      display: none;
+      transform-style: preserve-3d;
+    }
+
+    .carousel-slide.active {
+      display: block;
+      animation: rotateCircular3D 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .slide-text {
+      color: #cbd5e1;
+      font-size: 1.05rem;
+      line-height: 1.8;
+      text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    }
+
+    /* Controles 3D */
+    .carousel-controls {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 2rem;
+      width: 100%;
+      transform: translateZ(30px);
+    }
+
+    .nav-btn {
+      background: linear-gradient(135deg, rgba(39, 114, 143, 0.35), rgba(13, 33, 43, 0.85));
+      border: 1px solid rgba(82, 163, 199, 0.5);
+      color: #b7e3f8;
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.3rem;
+      font-weight: 700;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 
+        0 10px 25px rgba(0, 0, 0, 0.6),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-btn:hover:not(:disabled) {
+      background: linear-gradient(135deg, #27728F, #1d5267);
+      color: #ffffff;
+      border-color: #52a3c7;
+      transform: translateZ(25px) scale(1.12);
+      box-shadow: 
+        0 15px 30px var(--accent-glow),
+        0 0 25px #52a3c7,
+        inset 0 2px 6px rgba(255, 255, 255, 0.35);
+    }
+
+    .nav-btn:active:not(:disabled) {
+      transform: translateZ(10px) scale(0.95);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.25;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Indicadores de Puntos (Dots) 3D */
+    .carousel-dots {
+      display: flex;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(148, 163, 184, 0.3);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.6);
+    }
+
+    .dot.active {
+      background: #52a3c7;
+      width: 32px;
+      border-radius: 6px;
+      box-shadow: 0 0 15px #52a3c7, inset 0 1px 2px rgba(255, 255, 255, 0.5);
+    }
+
+    /* Keyframes para Rotación Circular 3D */
+    @keyframes rotateCircular3D {
+      0% {
+        opacity: 0;
+        transform: rotateY(-60deg) translateZ(-120px) scale(0.9);
+      }
+      100% {
+        opacity: 1;
+        transform: rotateY(0deg) translateZ(0px) scale(1);
+      }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(35px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .carousel-card {
+        padding: 2rem 1.5rem;
+        min-height: 400px;
+      }
+      .slide-text {
+        font-size: 0.95rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Instrucción Flotante -->
+  <div class="floating-instruction">
+    <svg viewBox="0 0 24 24">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+    </svg>
+    Haga clic sobre los botones de navegación &lt;, &gt; para ampliar la información.
+  </div>
+
+  <!-- Contenedor Carrusel 3D Circular -->
+  <div class="carousel-container">
+    <div class="carousel-card">
+      
+      <!-- Slide 1 -->
+      <div class="carousel-slide active" id="slide-0">
+        <p class="slide-text">
+          Según se citó en el numeral 1.2, el enfoque de Calles Completas (Complete Streets) es hoy el paradigma más influyente en el diseño de infraestructura vial urbana orientada a la seguridad. Su premisa central es sencilla: las calles deben proyectarse para servir con seguridad y equidad a todos los usuarios del espacio público, y no solo a los vehículos motorizados. La (NACTO, 2016), a través de su Global Street Design Guide, marca el estándar mundial para llevar este enfoque a la práctica, con especificaciones detalladas sobre secciones transversales, radios de giro urbanos, anchos de carril y criterios de pacificación del tránsito que hacen posible la coexistencia segura de peatones, ciclistas y vehículos motorizados.
+        </p>
+      </div>
+
+      <!-- Slide 2 -->
+      <div class="carousel-slide" id="slide-1">
+        <p class="slide-text">
+          En términos de diseño geométrico, las Calles Completas exigen reconfigurar de raíz los parámetros urbanos tradicionales. Los anchos de carril, que en el paradigma convencional se movían entre 3,50 m y 3,65 m para facilitar la circulación a alta velocidad, descienden a valores de entre 2,70 m y 3,00 m en el contexto urbano de este enfoque. La reducción no es un capricho normativo: responde a la evidencia científica que confirma su eficacia para moderar las velocidades de operación. Dumbaugh y Rae (2009) demostraron con modelos estadísticos que los carriles más angostos, sumados a la presencia de árboles y elementos de borde, reducen de forma objetiva la siniestralidad urbana y desmienten la vieja creencia de que, dentro de la ciudad, las vías más anchas son por sí mismas más seguras.
+        </p>
+      </div>
+
+      <!-- Slide 3 -->
+      <div class="carousel-slide" id="slide-2">
+        <p class="slide-text">
+          La implementación de Calles Completas involucra la incorporación de múltiples elementos geométricos que operan de forma sinérgica para moderar la velocidad y proteger a los usuarios vulnerables. Entre estos elementos se destacan las extensiones de bordillo (bulb-outs) que reducen la distancia de cruce peatonal, las isletas de refugio peatonal en vías de secciones amplias, las miniglorietas o rotondas compactas en intersecciones locales, las chicanas o deflexiones horizontales que interrumpen la linealidad del trazado, y las plataformas elevadas en puntos de cruce que obligan al conductor a reducir la velocidad. Cada uno de estos dispositivos responde a un principio de diseño geométrico específico y su dimensionamiento debe realizarse en función de la velocidad objetivo, el vehículo de diseño y los flujos peatonales y ciclistas esperados.
+        </p>
+      </div>
+
+      <!-- Controles de navegación y puntos -->
+      <div class="carousel-controls">
+        <button class="nav-btn" id="prevBtn" onclick="prevSlide()" title="Anterior">&lt;</button>
+        <div class="carousel-dots" id="carouselDots"></div>
+        <button class="nav-btn" id="nextBtn" onclick="nextSlide()" title="Siguiente">&gt;</button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let currentIndex = 0;
+    const slides = document.querySelectorAll('.carousel-slide');
+    const totalSlides = slides.length;
+    const dotsContainer = document.getElementById('carouselDots');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    // Crear puntos indicadores dinámicamente
+    function createDots() {
+      for (let i = 0; i < totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.classList.add('dot');
+        if (i === 0) dot.classList.add('active');
+        dot.setAttribute('onclick', `goToSlide(${i})`);
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    function updateCarousel() {
+      slides.forEach((slide, index) => {
+        slide.classList.remove('active');
+        if (index === currentIndex) {
+          // Forzar reinicio de animación 3D rotacional
+          void slide.offsetWidth;
+          slide.classList.add('active');
+        }
+      });
+
+      const dots = document.querySelectorAll('.dot');
+      dots.forEach((dot, index) => {
+        dot.classList.remove('active');
+        if (index === currentIndex) {
+          dot.classList.add('active');
+        }
+      });
+
+      // Evitar loop infinito deshabilitando extremos
+      prevBtn.disabled = currentIndex === 0;
+      nextBtn.disabled = currentIndex === totalSlides - 1;
+    }
+
+    function nextSlide() {
+      if (currentIndex < totalSlides - 1) {
+        currentIndex++;
+        updateCarousel();
+      }
+    }
+
+    function prevSlide() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        updateCarousel();
+      }
+    }
+
+    function goToSlide(index) {
+      currentIndex = index;
+      updateCarousel();
+    }
+
+    // Navegación con teclado (Flechas izquierda y derecha)
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'ArrowRight') {
+        nextSlide();
+      } else if (event.key === 'ArrowLeft') {
+        prevSlide();
+      }
+    });
+
+    // Inicializar puntos y botones
+    createDots();
+    updateCarousel();
+  </script>
+</body>
+</html>

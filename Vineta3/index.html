@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tarjetas Informativas Numeradas</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Poppins (400, 500, 600, 700) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at 50% 0%, #ffffff 0%, #f4f7f9 100%);
+            color: #1a2b32;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* -------------------------------------------------------------
+         * ANIMACIÓN DE LÁTIGO (WHIP SNAP ENTRANCE)
+         * ------------------------------------------------------------- */
+        @keyframes whipEntrance {
+            0% {
+                opacity: 0;
+                transform: translateX(-160px) rotate(-10deg) skewX(-18deg) scale(1.15, 0.85);
+                filter: blur(6px);
+            }
+            50% {
+                opacity: 1;
+                transform: translateX(20px) rotate(2.5deg) skewX(8deg) scale(0.97, 1.03);
+                filter: blur(0px);
+            }
+            75% {
+                transform: translateX(-8px) rotate(-1deg) skewX(-3deg) scale(1.01);
+            }
+            90% {
+                transform: translateX(3px) rotate(0.4deg);
+            }
+            100% {
+                opacity: 1;
+                transform: translateX(0) rotate(0deg) skewX(0deg) scale(1);
+            }
+        }
+
+        .animate-whip {
+            animation: whipEntrance 0.85s cubic-bezier(0.22, 1.45, 0.36, 1) forwards;
+            will-change: transform, opacity, filter;
+        }
+
+        .stagger-1 { animation-delay: 0.1s; opacity: 0; }
+        .stagger-2 { animation-delay: 0.35s; opacity: 0; }
+        .stagger-3 { animation-delay: 0.6s; opacity: 0; }
+
+        /* -------------------------------------------------------------
+         * BOTÓN DE REINICIO
+         * ------------------------------------------------------------- */
+        .btn-restart {
+            background-color: #236c89;
+            color: #ffffff;
+            font-weight: 500;
+            border-radius: 9999px;
+            padding: 0.625rem 1.5rem;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 14px rgba(35, 108, 137, 0.25);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+            border: 2px solid transparent;
+        }
+
+        .btn-restart:hover {
+            background-color: #1a546c;
+            transform: translateY(-2px) scale(1.03);
+            box-shadow: 0 6px 20px rgba(35, 108, 137, 0.35);
+        }
+
+        .btn-restart:active {
+            transform: translateY(1px) scale(0.98);
+        }
+
+        .btn-restart svg {
+            transition: transform 0.4s ease;
+        }
+
+        .btn-restart:hover svg {
+            transform: rotate(180deg);
+        }
+
+        /* -------------------------------------------------------------
+         * TARJETAS CON INSIGNIA NUMÉRICA SUPERIOR Y TILT HOVER
+         * ------------------------------------------------------------- */
+        .info-card {
+            background-color: #ffffff;
+            border: 2px solid #236c89;
+            border-radius: 12px;
+            position: relative;
+            text-align: left !important;
+            box-shadow: 0 4px 18px rgba(35, 108, 137, 0.08), 0 2px 6px rgba(0, 0, 0, 0.04);
+            transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1), 
+                        box-shadow 0.35s ease, 
+                        border-color 0.35s ease;
+            cursor: pointer;
+            perspective: 1000px;
+            display: flex;
+            flex-direction: column;
+            margin-top: 1.5rem; /* Margen para que la insignia superior no se solape */
+        }
+
+        /* Barra de acento superior teal */
+        .card-top-bar {
+            height: 10px;
+            background-color: #236c89;
+            width: 100%;
+            border-top-left-radius: 9px;
+            border-top-right-radius: 9px;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        /* Círculo con numeración sobresaliendo sobre el borde superior */
+        .number-badge {
+            position: absolute;
+            top: -21px;
+            width: 44px;
+            height: 44px;
+            background-color: #236c89;
+            color: #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 10px rgba(35, 108, 137, 0.3);
+            border: 3px solid #ffffff;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+            z-index: 20;
+        }
+
+        .info-card:hover .number-badge {
+            transform: scale(1.12);
+            background-color: #1a546c;
+        }
+
+        /* Resplandor radial dinámico que sigue al cursor (Spotlight) */
+        .spotlight-overlay {
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            background: radial-gradient(
+                350px circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+                rgba(35, 108, 137, 0.12),
+                transparent 75%
+            );
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .info-card:hover .spotlight-overlay {
+            opacity: 1;
+        }
+
+        .info-card:hover {
+            transform: translateY(-8px) scale(1.02) rotateX(var(--tilt-x, 0deg)) rotateY(var(--tilt-y, 0deg));
+            border-color: #1a546c;
+            box-shadow: 0 18px 36px -8px rgba(35, 108, 137, 0.22), 0 0 14px rgba(35, 108, 137, 0.15);
+        }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-12">
+
+    <div class="w-full max-w-7xl mx-auto flex flex-col items-center gap-8">
+        <!-- SECCIÓN DE INSTRUCCIÓN Y BOTÓN DE REINICIO -->
+        <header class="w-full text-center flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/80 backdrop-blur p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <p class="text-slate-600 text-sm sm:text-base font-normal max-w-2xl text-center sm:text-left leading-relaxed">
+                Pase el cursor sobre cada tarjeta o haga clic sobre ellas para interactuar. Utilice el botón para reiniciar la animación.
+            </p>
+            <button id="btnRestart" class="btn-restart shrink-0" aria-label="Reiniciar animación">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
+                <span>Reiniciar animación</span>
+            </button>
+        </header>
+
+        <!-- Grilla de Tarjetas Numeradas -->
+        <main class="w-full grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-8 items-stretch pt-2">
+
+            <!-- TARJETA 1 -->
+            <article class="info-card animate-whip stagger-1">
+                <div class="card-top-bar">
+                    <div class="number-badge">1</div>
+                </div>
+                <div class="spotlight-overlay"></div>
+                <div class="p-6 pt-8 sm:p-7 sm:pt-9 flex-1 flex items-center">
+                    <p class="text-gray-800 leading-relaxed text-sm sm:text-base font-normal text-left relative z-10">
+                        Geométricas asociadas al trazado de la vía, como el radio de una curva o la longitud de una recta.
+                    </p>
+                </div>
+            </article>
+
+            <!-- TARJETA 2 -->
+            <article class="info-card animate-whip stagger-2">
+                <div class="card-top-bar">
+                    <div class="number-badge">2</div>
+                </div>
+                <div class="spotlight-overlay"></div>
+                <div class="p-6 pt-8 sm:p-7 sm:pt-9 flex-1 flex items-center">
+                    <p class="text-gray-800 leading-relaxed text-sm sm:text-base font-normal text-left relative z-10">
+                        No geométricas, también asociadas al trazado, cuya consideración es más complicada en los modelos, como el ancho de los carriles y la visibilidad lateral.
+                    </p>
+                </div>
+            </article>
+
+            <!-- TARJETA 3 -->
+            <article class="info-card animate-whip stagger-3">
+                <div class="card-top-bar">
+                    <div class="number-badge">3</div>
+                </div>
+                <div class="spotlight-overlay"></div>
+                <div class="p-6 pt-8 sm:p-7 sm:pt-9 flex-1 flex items-center">
+                    <p class="text-gray-800 leading-relaxed text-sm sm:text-base font-normal text-left relative z-10">
+                        Variables relacionadas con los conductores individuales, las más difíciles de identificar y estimar, y las causantes de la variabilidad residual en modelos de predicción de velocidades de operación. Estas variables están asociadas a la psicología y a las condiciones particulares de cada conductor, como el conocimiento de la vía y el propósito del viaje.
+                    </p>
+                </div>
+            </article>
+
+        </main>
+    </div>
+
+    <!-- SINTETIZADOR AUDIO Y SCRIPT INTERACTIVO -->
+    <script>
+        class SoundSystem {
+            constructor() {
+                this.ctx = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    if (AudioCtx) this.ctx = new AudioCtx();
+                }
+                if (this.ctx && this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            // Sonido de Látigo / Ráfaga para entrada y reinicio
+            playWhipSound() {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const now = this.ctx.currentTime;
+
+                    // Ruido filtrado de ráfaga
+                    const bufferSize = Math.floor(this.ctx.sampleRate * 0.14);
+                    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                    const data = buffer.getChannelData(0);
+                    for (let i = 0; i < bufferSize; i++) {
+                        data[i] = Math.random() * 2 - 1;
+                    }
+
+                    const noise = this.ctx.createBufferSource();
+                    noise.buffer = buffer;
+
+                    const filter = this.ctx.createBiquadFilter();
+                    filter.type = 'bandpass';
+                    filter.frequency.setValueAtTime(300, now);
+                    filter.frequency.exponentialRampToValueAtTime(2800, now + 0.05);
+                    filter.frequency.exponentialRampToValueAtTime(350, now + 0.14);
+
+                    const noiseGain = this.ctx.createGain();
+                    noiseGain.gain.setValueAtTime(0.001, now);
+                    noiseGain.gain.linearRampToValueAtTime(0.25, now + 0.04);
+                    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+
+                    noise.connect(filter);
+                    filter.connect(noiseGain);
+                    noiseGain.connect(this.ctx.destination);
+
+                    // Chasquido elástico agudo
+                    const osc = this.ctx.createOscillator();
+                    const oscGain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1200, now);
+                    osc.frequency.exponentialRampToValueAtTime(200, now + 0.1);
+
+                    oscGain.gain.setValueAtTime(0.18, now);
+                    oscGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+                    osc.connect(oscGain);
+                    oscGain.connect(this.ctx.destination);
+
+                    noise.start(now);
+                    noise.stop(now + 0.14);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } catch (e) {}
+            }
+
+            // Sonido cristalino suave al pasar el cursor (hover)
+            playHoverSound() {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(540, now);
+                    osc.frequency.exponentialRampToValueAtTime(820, now + 0.04);
+
+                    gain.gain.setValueAtTime(0.03, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.04);
+                } catch (e) {}
+            }
+
+            // Clic interactivo
+            playClickSound() {
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    const now = this.ctx.currentTime;
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(880, now);
+                    osc.frequency.exponentialRampToValueAtTime(340, now + 0.06);
+
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start(now);
+                    osc.stop(now + 0.06);
+                } catch (e) {}
+            }
+        }
+
+        const audio = new SoundSystem();
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.info-card');
+            const btnRestart = document.getElementById('btnRestart');
+
+            // Reproduce la secuencia de audio de latigazo para la entrada
+            const playAnimationSequence = () => {
+                const delays = [100, 350, 600];
+                delays.forEach(d => {
+                    setTimeout(() => audio.playWhipSound(), d);
+                });
+            };
+
+            // Secuencia de entrada inicial
+            playAnimationSequence();
+
+            // Lógica de reinicio de animación
+            btnRestart.addEventListener('click', () => {
+                audio.playClickSound();
+
+                cards.forEach(card => {
+                    card.classList.remove('animate-whip');
+                    // Forzar reflow para reiniciar la animación CSS
+                    void card.offsetWidth;
+                    card.classList.add('animate-whip');
+                });
+
+                playAnimationSequence();
+            });
+
+            // Eventos de spotlight, tilt e interacciones sonoras
+            cards.forEach(card => {
+                card.addEventListener('mousemove', (e) => {
+                    const rect = card.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+
+                    // Posición de la luz de foco
+                    card.style.setProperty('--mouse-x', `${x}px`);
+                    card.style.setProperty('--mouse-y', `${y}px`);
+
+                    // Inclinación suave 3D (Tilt)
+                    const centerX = rect.width / 2;
+                    const centerY = rect.height / 2;
+                    const tiltX = ((y - centerY) / centerY) * -4;
+                    const tiltY = ((x - centerX) / centerX) * 4;
+
+                    card.style.setProperty('--tilt-x', `${tiltX}deg`);
+                    card.style.setProperty('--tilt-y', `${tiltY}deg`);
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    card.style.setProperty('--tilt-x', `0deg`);
+                    card.style.setProperty('--tilt-y', `0deg`);
+                });
+
+                card.addEventListener('mouseenter', () => {
+                    audio.playHoverSound();
+                });
+
+                card.addEventListener('click', () => {
+                    audio.playClickSound();
+                });
+            });
+
+            // Habilitar audio en la primera interacción
+            const unlock = () => {
+                audio.init();
+                document.removeEventListener('click', unlock);
+                document.removeEventListener('mousemove', unlock);
+            };
+            document.addEventListener('click', unlock);
+            document.addEventListener('mousemove', unlock, { once: true });
+        });
+    </script>
+</body>
+</html>

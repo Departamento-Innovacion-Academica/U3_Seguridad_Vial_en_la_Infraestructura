@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Limitaciones de Modelos de Velocidad</title>
+
+  <!-- Google Fonts: Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Variables de diseño con color principal #27728F */
+    :root {
+      --primary-color: #27728F;
+      --accent-mid: #52a3c7;
+      --accent-light: #b7e3f8;
+      --primary-glow: rgba(39, 114, 143, 0.38);
+      --bg-gradient: radial-gradient(circle at 50% 0%, #0d212b 0%, #081218 60%, #04080c 100%);
+      --card-bg: rgba(15, 33, 43, 0.78);
+      --card-border: rgba(39, 114, 143, 0.35);
+      --text-main: #f3f4f6;
+      --text-muted: #94a3b8;
+      --modal-overlay: rgba(4, 10, 15, 0.88);
+      --modal-bg: #0f222d;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 1.5rem;
+      overflow-x: hidden;
+    }
+
+    /* Instrucción flotante animada */
+    .floating-instruction {
+      background: rgba(39, 114, 143, 0.16);
+      border: 1px solid rgba(39, 114, 143, 0.5);
+      color: var(--accent-light);
+      padding: 0.85rem 1.8rem;
+      border-radius: 50px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin-bottom: 3rem;
+      box-shadow: 0 0 25px rgba(39, 114, 143, 0.22), inset 0 0 10px rgba(39, 114, 143, 0.12);
+      backdrop-filter: blur(12px);
+      animation: float 3.5s ease-in-out infinite, fadeInDown 0.8s ease-out;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      letter-spacing: 0.2px;
+      text-align: center;
+    }
+
+    .floating-instruction svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--accent-mid);
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 6px var(--primary-color));
+    }
+
+    /* Cuadrícula responsiva de 6 tarjetas */
+    .cards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 2rem;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    /* Tarjeta interactiva (solo muestra el título) */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2.2rem 1.8rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(16px);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.65);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 195px;
+      opacity: 0;
+      animation: fadeInUp 0.75s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .card:nth-child(1) { animation-delay: 0.06s; }
+    .card:nth-child(2) { animation-delay: 0.14s; }
+    .card:nth-child(3) { animation-delay: 0.22s; }
+    .card:nth-child(4) { animation-delay: 0.30s; }
+    .card:nth-child(5) { animation-delay: 0.38s; }
+    .card:nth-child(6) { animation-delay: 0.46s; }
+
+    /* Línea superior degradada */
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: linear-gradient(90deg, var(--primary-color), var(--accent-mid), var(--accent-light));
+      opacity: 0.65;
+      transition: opacity 0.35s ease;
+    }
+
+    /* Halo de luz al hacer hover */
+    .card::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(39, 114, 143, 0.16) 0%, transparent 70%);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-9px) scale(1.02);
+      border-color: var(--accent-mid);
+      box-shadow: 0 22px 45px -12px var(--primary-glow), 0 0 28px rgba(82, 163, 199, 0.22);
+    }
+
+    .card:hover::before,
+    .card:hover::after {
+      opacity: 1;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      z-index: 1;
+    }
+
+    .icon-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      background: rgba(39, 114, 143, 0.22);
+      border: 1px solid rgba(82, 163, 199, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: transform 0.35s ease, background 0.35s ease, border-color 0.35s ease;
+    }
+
+    .card:hover .icon-badge {
+      transform: rotate(6deg) scale(1.08);
+      background: rgba(39, 114, 143, 0.38);
+      border-color: var(--accent-light);
+    }
+
+    .icon-badge svg {
+      width: 22px;
+      height: 22px;
+      fill: var(--accent-light);
+    }
+
+    .card-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: #ffffff;
+      line-height: 1.4;
+      letter-spacing: -0.2px;
+    }
+
+    .card-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--accent-mid);
+      font-size: 0.85rem;
+      font-weight: 600;
+      z-index: 1;
+      transition: color 0.3s ease, transform 0.3s ease;
+    }
+
+    .card:hover .card-indicator {
+      color: var(--accent-light);
+      transform: translateX(5px);
+    }
+
+    .card-indicator svg {
+      width: 17px;
+      height: 17px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    /* Ventana modal emergente */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--modal-overlay);
+      backdrop-filter: blur(14px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.35s ease, visibility 0.35s ease;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-content {
+      background: var(--modal-bg);
+      border: 1px solid rgba(82, 163, 199, 0.42);
+      border-radius: 24px;
+      max-width: 720px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 2.5rem;
+      position: relative;
+      box-shadow: 0 30px 60px -12px rgba(0, 0, 0, 0.9), 0 0 45px rgba(39, 114, 143, 0.28);
+      transform: scale(0.9) translateY(25px);
+      transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.35rem;
+      right: 1.35rem;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: var(--text-muted);
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.35rem;
+      transition: all 0.25s ease;
+    }
+
+    .modal-close:hover {
+      background: rgba(39, 114, 143, 0.4);
+      color: #ffffff;
+      border-color: var(--accent-light);
+      transform: rotate(90deg);
+    }
+
+    .modal-header {
+      padding-right: 2.5rem;
+      padding-bottom: 1rem;
+      margin-bottom: 1.4rem;
+      border-bottom: 1px solid rgba(82, 163, 199, 0.3);
+    }
+
+    .modal-header h3 {
+      font-size: 1.32rem;
+      font-weight: 700;
+      color: var(--accent-light);
+      line-height: 1.4;
+    }
+
+    .modal-bullets {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .modal-bullets li {
+      position: relative;
+      padding-left: 1.5rem;
+      color: #e2e8f0;
+      font-size: 0.96rem;
+      line-height: 1.7;
+    }
+
+    .modal-bullets li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0.65rem;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent-mid);
+      box-shadow: 0 0 8px var(--accent-light);
+    }
+
+    /* Animaciones clave */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-7px); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-18px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Scrollbar del modal */
+    .modal-content::-webkit-scrollbar { width: 7px; }
+    .modal-content::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.2); }
+    .modal-content::-webkit-scrollbar-thumb { background: var(--primary-color); border-radius: 10px; }
+    .modal-content::-webkit-scrollbar-thumb:hover { background: var(--accent-mid); }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 1.75rem 1.4rem;
+        min-height: 170px;
+      }
+      .modal-content {
+        padding: 2rem 1.4rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Instrucción flotante -->
+  <div class="floating-instruction" role="status">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+    </svg>
+    <span>Haga clic sobre cada tarjeta para ampliar la información.</span>
+  </div>
+
+  <!-- Cuadrícula de tarjetas (solo título en cada tarjeta) -->
+  <main class="cards-container">
+    <article class="card" onclick="openModal('modal-1')" tabindex="0" role="button" aria-label="Deficiencias relacionadas con la toma de datos">
+      <div class="card-header">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 14H7v-2h10v2zm0-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        </div>
+        <h2 class="card-title">Deficiencias relacionadas con la toma de datos</h2>
+      </div>
+      <div class="card-indicator">
+        <span>Ver detalle</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </article>
+
+    <article class="card" onclick="openModal('modal-2')" tabindex="0" role="button" aria-label="Hipótesis no realistas sobre el comportamiento de los conductores">
+      <div class="card-header">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+        </div>
+        <h2 class="card-title">Hipótesis no realistas sobre el comportamiento de los conductores</h2>
+      </div>
+      <div class="card-indicator">
+        <span>Ver detalle</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </article>
+
+    <article class="card" onclick="openModal('modal-3')" tabindex="0" role="button" aria-label="Estimación de los cambios de velocidad entre elementos geométricos">
+      <div class="card-header">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9h-2a7 7 0 1 1-7-7V3zm4.24 4.34-4.95 4.95 1.41 1.41 4.95-4.95-1.41-1.41z"/></svg>
+        </div>
+        <h2 class="card-title">Estimación de los cambios de velocidad entre elementos geométricos</h2>
+      </div>
+      <div class="card-indicator">
+        <span>Ver detalle</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </article>
+
+    <article class="card" onclick="openModal('modal-4')" tabindex="0" role="button" aria-label="Falta de uniformidad entre los modelos">
+      <div class="card-header">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+        </div>
+        <h2 class="card-title">Falta de uniformidad entre los modelos</h2>
+      </div>
+      <div class="card-indicator">
+        <span>Ver detalle</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </article>
+
+    <article class="card" onclick="openModal('modal-5')" tabindex="0" role="button" aria-label="Limitación de la regresión lineal">
+      <div class="card-header">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99l1.5 1.5z"/></svg>
+        </div>
+        <h2 class="card-title">Limitación de la regresión lineal</h2>
+      </div>
+      <div class="card-indicator">
+        <span>Ver detalle</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </article>
+
+    <article class="card" onclick="openModal('modal-6')" tabindex="0" role="button" aria-label="Aplicabilidad limitada de los modelos">
+      <div class="card-header">
+        <div class="icon-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 11.5L4.4 9.7 2 11l10 5 10-5-2.4-1.3-7.6 3.8zm0 4L4.4 13.7 2 15l10 5 10-5-2.4-1.3-7.6 3.8z"/></svg>
+        </div>
+        <h2 class="card-title">Aplicabilidad limitada de los modelos</h2>
+      </div>
+      <div class="card-indicator">
+        <span>Ver detalle</span>
+        <svg viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </div>
+    </article>
+  </main>
+
+  <!-- Ventanas modales con la información completa de cada tarjeta -->
+  <div class="modal-overlay" id="modal-1" onclick="closeModalOnOutsideClick(event, 'modal-1')" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-1-title">
+      <button class="modal-close" onclick="closeModal('modal-1')" aria-label="Cerrar ventana">&times;</button>
+      <div class="modal-header">
+        <h3 id="modal-1-title">Deficiencias relacionadas con la toma de datos</h3>
+      </div>
+      <ul class="modal-bullets">
+        <li>Los tramos de estudio generalmente excluyen condiciones desfavorables como intersecciones o cambios en el número de carriles, lo que limita la aplicabilidad de los modelos.</li>
+        <li>El tamaño de la muestra es a menudo insuficiente, con un número de observaciones por tramo que varía entre 30 y 100, lo que cuestiona la fiabilidad para representar el percentil 85 de la velocidad.</li>
+        <li>Errores metodológicos en la toma de datos, como el error del coseno (desviaciones entre el rayo del radar leído y la dirección conducida real), errores humanos y variaciones en el comportamiento de los conductores al percibir el equipo de medición. Estas mediciones manuales con pistolas radar y lidar, aunque minimizan errores, solo proporcionan datos puntuales.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-2" onclick="closeModalOnOutsideClick(event, 'modal-2')" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-2-title">
+      <button class="modal-close" onclick="closeModal('modal-2')" aria-label="Cerrar ventana">&times;</button>
+      <div class="modal-header">
+        <h3 id="modal-2-title">Hipótesis no realistas sobre el comportamiento de los conductores</h3>
+      </div>
+      <ul class="modal-bullets">
+        <li>Muchos modelos asumen que la aceleración y desaceleración ocurren únicamente en rectas y que la velocidad es constante a lo largo de las curvas, lo cual no es cierto según datos recientes.</li>
+        <li>Falta de datos para perfiles longitudinales o combinaciones vertical/horizontal, asumiendo valores máximos de curvas horizontales.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-3" onclick="closeModalOnOutsideClick(event, 'modal-3')" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-3-title">
+      <button class="modal-close" onclick="closeModal('modal-3')" aria-label="Cerrar ventana">&times;</button>
+      <div class="modal-header">
+        <h3 id="modal-3-title">Estimación de los cambios de velocidad entre elementos geométricos</h3>
+      </div>
+      <ul class="modal-bullets">
+        <li>La estimación del diferencial de velocidad entre una recta y una curva es crucial para evaluar la consistencia del diseño. Métodos como ΔV85, no siempre representan con precisión la realidad, ya que las distribuciones de velocidad en rectas y curvas no son las mismas.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-4" onclick="closeModalOnOutsideClick(event, 'modal-4')" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-4-title">
+      <button class="modal-close" onclick="closeModal('modal-4')" aria-label="Cerrar ventana">&times;</button>
+      <div class="modal-header">
+        <h3 id="modal-4-title">Falta de uniformidad entre los modelos</h3>
+      </div>
+      <ul class="modal-bullets">
+        <li>Los modelos desarrollados en los últimos 50 años presentan formatos, variables independientes y coeficientes de regresión sustancialmente diferentes, reflejando diferencias en el comportamiento del conductor entre distintas regiones.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-5" onclick="closeModalOnOutsideClick(event, 'modal-5')" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-5-title">
+      <button class="modal-close" onclick="closeModal('modal-5')" aria-label="Cerrar ventana">&times;</button>
+      <div class="modal-header">
+        <h3 id="modal-5-title">Limitación de la regresión lineal</h3>
+      </div>
+      <ul class="modal-bullets">
+        <li>Asumir independencia de los datos entre secciones puede subestimar la diferencia de velocidades.</li>
+        <li>Los estudios convencionales han confiado en la información proveniente de datos agregados para derivar sus estimaciones de la velocidad media y del percentil 85 de la velocidad en distintas secciones de la carretera, así como de los diferenciales de velocidad. Esta metodología puede resultar en la pérdida de información debido a la agregación de datos, un fenómeno conocido como falacia ecológica, sobreestimando el coeficiente de determinación (r2), es decir, la adecuación del modelo.</li>
+        <li>La validez de los valores estimados siempre es cuestionable, especialmente cuando se utiliza la regresión fuera del rango de los datos recogidos.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modal-6" onclick="closeModalOnOutsideClick(event, 'modal-6')" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modal-6-title">
+      <button class="modal-close" onclick="closeModal('modal-6')" aria-label="Cerrar ventana">&times;</button>
+      <div class="modal-header">
+        <h3 id="modal-6-title">Aplicabilidad limitada de los modelos</h3>
+      </div>
+      <ul class="modal-bullets">
+        <li>Los modelos generalmente se basan en datos tomados bajo condiciones específicas y en lugares determinados, limitando su aplicabilidad.</li>
+        <li>La mayoría de los modelos consideran solo la alineación horizontal, sin integrar el efecto tridimensional del trazado real, especialmente para vehículos pesados.</li>
+        <li>Hay pocos modelos para la estimación de la velocidad en rectas comparado con curvas, debido a la mayor complejidad en las rectas, donde influyen más variables.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    // Abre una ventana modal emergente y bloquea el scroll de fondo
+    function openModal(modalId) {
+      try {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.classList.add('active');
+          modal.setAttribute('aria-hidden', 'false');
+          document.body.style.overflow = 'hidden';
+        }
+      } catch (error) {
+        console.error('Error al abrir el modal:', error);
+      }
+    }
+
+    // Cierra una ventana modal emergente y restaura el scroll
+    function closeModal(modalId) {
+      try {
+        const modal = document.getElementById(modalId);
+        if (modal) {
+          modal.classList.remove('active');
+          modal.setAttribute('aria-hidden', 'true');
+          document.body.style.overflow = '';
+        }
+      } catch (error) {
+        console.error('Error al cerrar el modal:', error);
+      }
+    }
+
+    // Cierra el modal al hacer clic fuera de su contenido
+    function closeModalOnOutsideClick(event, modalId) {
+      if (event.target && event.target.id === modalId) {
+        closeModal(modalId);
+      }
+    }
+
+    // Permite activar tarjetas con Enter o Espacio y cerrar modales con Escape
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        const activeModal = document.querySelector('.modal-overlay.active');
+        if (activeModal) {
+          closeModal(activeModal.id);
+        }
+      } else if ((event.key === 'Enter' || event.key === ' ') && event.target.classList.contains('card')) {
+        event.preventDefault();
+        event.target.click();
+      }
+    });
+  </script>
+</body>
+</html>
